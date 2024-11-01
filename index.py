@@ -128,6 +128,7 @@ def display_page(url_params):
     token = "".join(url_params.split('token=')[1:])
     tdata_raw = auth_utils.token_to_data(token)
     
+    
     if tdata_raw:
         if tdata_raw == "EXPIRED":
             return None, None, None, components.expired, base_title, True, True, True, True, True
