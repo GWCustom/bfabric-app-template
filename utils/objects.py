@@ -2,14 +2,14 @@ from bfabric import Bfabric
 
 
 class Logger:
-    def __init__(self, jobid: int):
+    def __init__(self, jobid: int, config_filepath: str = "~/.bfabricpy.yml"):
         """
         Initialize a logger for a specific job and user.
         """
         self.jobid = jobid
-        self.power_user_wrapper = self._get_power_user_wrapper()
+        self.power_user_wrapper = self._get_power_user_wrapper(config_filepath=config_filepath)
 
-    def _get_power_user_wrapper(self) -> Bfabric:
+    def _get_power_user_wrapper(self, config_filepath) -> Bfabric:
         """
         Initializes a B-Fabric wrapper using the power user's credentials.
 
@@ -17,7 +17,7 @@ class Logger:
             A B-Fabric wrapper instance authenticated as the power user.
         """
         power_user_wrapper = Bfabric.from_config(
-            config_path="~/.bfabricpy.yml"
+            config_path=config_filepath
         )
         return power_user_wrapper
 
