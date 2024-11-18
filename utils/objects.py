@@ -8,6 +8,7 @@ class Logger:
         """
         self.jobid = jobid
         self.power_user_wrapper = self._get_power_user_wrapper(config_filepath=config_filepath)
+        self.log = ""
 
     def _get_power_user_wrapper(self, config_filepath) -> Bfabric:
         """
