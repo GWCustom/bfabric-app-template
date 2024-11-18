@@ -7,6 +7,7 @@ from bfabric import BfabricAuth
 from bfabric import BfabricClientConfig
 from dash import html
 import dash_bootstrap_components as dbc
+from .objects import lread
 
 VALIDATION_URL = "https://fgcz-bfabric.uzh.ch/bfabric/rest/token/validate?token="
 HOST = "fgcz-bfabric.uzh.ch"
@@ -52,7 +53,8 @@ def token_to_data(token: str) -> str:
             webbase_data = environment_dict.get(userinfo['environment'], None),
             application_params_data = {},
             application_data = str(userinfo['applicationId']),
-            userWsPassword = userinfo['userWsPassword']
+            userWsPassword = userinfo['userWsPassword'],
+            jobId = userinfo['jobId']
         )
 
         return json.dumps(token_data)
@@ -92,9 +94,11 @@ def entity_data(token_data: dict) -> str:
     entity_class = token_data.get('entityClass_data', None)
     endpoint = entity_class_map.get(entity_class, None)
     entity_id = token_data.get('entity_id_data', None)
+    jobId = token_data.get('jobId', None)
 
-    if wrapper and entity_class and endpoint and entity_id:
-        entity_data_dict = wrapper.read(endpoint=endpoint, obj={"id": entity_id}, max_results=None)[0]
+    if wrapper and entity_class and endpoint and entity_id and jobId:
+        inputs = {"endpoint": endpoint, "obj": {"id": entity_id}, "max_results": None}
+        entity_data_dict = lread(jobId, wrapper, inputs)[0]
         
         if entity_data_dict:
             json_data = json.dumps({
