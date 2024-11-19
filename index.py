@@ -141,7 +141,8 @@ def display_page(url_params):
         return None, None, None, components.no_auth, base_title, True, True, True, True, True, None
     
     if tdata:
-        entity_data, logger_instance = json.loads(auth_utils.entity_data(tdata))
+        entity_data_json, logger_instance = auth_utils.entity_data(tdata)
+        entity_data = json.loads(entity_data_json)
         page_title = f"{base_title} - {tdata['entityClass_data']} - {tdata['entity_id_data']} ({tdata['environment']} System)" if tdata else "Bfabric App Interface"
 
         if not tdata:
@@ -152,7 +153,7 @@ def display_page(url_params):
         
         else:
             if not DEV:
-                return token, tdata, entity_data, components.auth, page_title, False, False, False, False, False, logger_instance.to_pickle()
+                return token, tdata, entity_data, components.auth, page_title, False, False, False, False, False, logger_instance.save_logs_to_dcc()
             else: 
                 return token, tdata, entity_data, components.dev, page_title, True, True, True, True, True, None
     else: 

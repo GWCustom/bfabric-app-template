@@ -7,8 +7,6 @@ from bfabric import BfabricAuth
 from bfabric import BfabricClientConfig
 from dash import html
 import dash_bootstrap_components as dbc
-from .objects import logthis
-
 from .objects import Logger
 
 VALIDATION_URL = "https://fgcz-bfabric.uzh.ch/bfabric/rest/token/validate?token="
@@ -80,8 +78,6 @@ def entity_data(token_data: dict) -> str:
     Edit this function to change which data is stored in the browser for this entity.
     """
 
-    #TODO Look through the changes I made here
-
     entity_class_map = {
         "Run": "run",
         "Sample": "sample",
@@ -104,22 +100,17 @@ def entity_data(token_data: dict) -> str:
 
     if wrapper and entity_class and endpoint and entity_id and jobId:
 
-        L = Logger(jobid=jobId, username=username)
+        L = Logger(jobid=jobId, username=username)   
+        
+        # Log the read operation directly using Logger L
+        L.logthis(
+            api_call=wrapper.save,
+            endpoint=endpoint,
+            obj={"id": entity_id},
+            make_log_api_call = False
+        )
 
-        # Now adapt the below call, to log the read operation directly to the objet "L" 
-
-        # logthis(
-        #     jobid=jobId,
-        #     username=username,
-        #     api_call=wrapper.save,
-        #     endpoint=endpoint,
-        #     obj={"id": entity_id},
-        #     make_log_api_call=False
-        # )
-
-        entity_data_dict = logthis(
-            jobid=jobId,
-            username=username,
+        entity_data_dict = L.logthis(
             api_call=wrapper.read,
             endpoint=endpoint,
             obj={"id": entity_id},
@@ -133,7 +124,7 @@ def entity_data(token_data: dict) -> str:
                 "modified": entity_data_dict.get("modified"),
             })
             print(json_data)
-            return json_data, L # We now need to return the logger object as well
+            return json_data, L
         else:
             print("entity_data_dict is empty or None")
             return None, None
