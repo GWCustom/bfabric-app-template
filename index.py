@@ -152,7 +152,7 @@ def display_page(url_params):
         
         else:
             if not DEV:
-                return token, tdata, entity_data, components.auth, page_title, False, False, False, False, False, logger_instance.to_json()
+                return token, tdata, entity_data, components.auth, page_title, False, False, False, False, False, logger_instance.to_pickle()
             else: 
                 return token, tdata, entity_data, components.dev, page_title, True, True, True, True, True, None
     else: 

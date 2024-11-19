@@ -23,9 +23,18 @@ class Logger:
         if jobid not in Logger.log_cache:
             Logger.log_cache[jobid] = []  # Initialize cache for this job ID
 
-    def to_json(self) -> str:
+    def to_pickle(self) -> str:
         """
         Convert the log cache to a JSON.
+        """
+
+        # TODO Implement this method
+        pass
+
+    @classmethod
+    def from_pickle(cls, json_str: str):
+        """
+        Load the log cache from a JSON string.
         """
 
         # TODO Implement this method
