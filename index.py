@@ -204,4 +204,4 @@ def update_auth_div(slider_val, dropdown_val, input_val, n_clicks, entity_data, 
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False, port=PORT, host=HOST)
+    app.run_server(debug=True, port=PORT, host=HOST)

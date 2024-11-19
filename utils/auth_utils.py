@@ -7,7 +7,7 @@ from bfabric import BfabricAuth
 from bfabric import BfabricClientConfig
 from dash import html
 import dash_bootstrap_components as dbc
-from .objects import lread
+from .objects import logthis
 
 VALIDATION_URL = "https://fgcz-bfabric.uzh.ch/bfabric/rest/token/validate?token="
 HOST = "fgcz-bfabric.uzh.ch"
@@ -95,10 +95,27 @@ def entity_data(token_data: dict) -> str:
     endpoint = entity_class_map.get(entity_class, None)
     entity_id = token_data.get('entity_id_data', None)
     jobId = token_data.get('jobId', None)
+    username = token_data.get("user_data", "None")
+
 
     if wrapper and entity_class and endpoint and entity_id and jobId:
-        inputs = {"endpoint": endpoint, "obj": {"id": entity_id}, "max_results": None}
-        entity_data_dict = lread(jobId, wrapper, inputs)[0]
+        logthis(
+            jobid=jobId,
+            username=username,
+            api_call=wrapper.save,
+            endpoint=endpoint,
+            obj={"id": entity_id},
+            make_log_api_call=False
+        )
+
+        entity_data_dict = logthis(
+            jobid=jobId,
+            username=username,
+            api_call=wrapper.read,
+            endpoint=endpoint,
+            obj={"id": entity_id},
+            max_results=None
+        )[0]
         
         if entity_data_dict:
             json_data = json.dumps({
