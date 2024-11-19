@@ -96,6 +96,7 @@ app.layout = html.Div(
         dcc.Store(id='token', storage_type='session'), # Where we store the actual token
         dcc.Store(id='entity', storage_type='session'), # Where we store the entity data retrieved from bfabric
         dcc.Store(id='token_data', storage_type='session'), # Where we store the token auth response
+        dcc.Store(id='log', storage_type='session'), # Where we store the log data
     ],style={"width":"100vw", "overflow-x":"hidden", "overflow-y":"scroll"}
 )
 
@@ -113,6 +114,7 @@ app.layout = html.Div(
         Output('example-dropdown', 'disabled'),
         Output('example-input', 'disabled'),
         Output('example-button', 'disabled'),
+        Output('log', 'data')
     ],
     [
         Input('url', 'search'),
@@ -123,7 +125,7 @@ def display_page(url_params):
     base_title = "Bfabric App Template"
 
     if not url_params:
-        return None, None, None, components.no_auth, base_title, True, True, True, True, True
+        return None, None, None, components.no_auth, base_title, True, True, True, True, True, None
     
     token = "".join(url_params.split('token=')[1:])
     tdata_raw = auth_utils.token_to_data(token)
@@ -131,30 +133,30 @@ def display_page(url_params):
     
     if tdata_raw:
         if tdata_raw == "EXPIRED":
-            return None, None, None, components.expired, base_title, True, True, True, True, True
+            return None, None, None, components.expired, base_title, True, True, True, True, True, None
 
         else: 
             tdata = json.loads(tdata_raw)
     else:
-        return None, None, None, components.no_auth, base_title, True, True, True, True, True
+        return None, None, None, components.no_auth, base_title, True, True, True, True, True, None
     
     if tdata:
-        entity_data = json.loads(auth_utils.entity_data(tdata))
+        entity_data, logger_instance = json.loads(auth_utils.entity_data(tdata))
         page_title = f"{base_title} - {tdata['entityClass_data']} - {tdata['entity_id_data']} ({tdata['environment']} System)" if tdata else "Bfabric App Interface"
 
         if not tdata:
-            return token, None, None, components.no_auth, page_title, True, True, True, True, True
+            return token, None, None, components.no_auth, page_title, True, True, True, True, True, None
         
         elif not entity_data:
-            return token, None, None, components.no_entity, page_title, True, True, True, True, True
+            return token, None, None, components.no_entity, page_title, True, True, True, True, True, None
         
         else:
             if not DEV:
-                return token, tdata, entity_data, components.auth, page_title, False, False, False, False, False
+                return token, tdata, entity_data, components.auth, page_title, False, False, False, False, False, logger_instance.to_json()
             else: 
-                return token, tdata, entity_data, components.dev, page_title, True, True, True, True, True
+                return token, tdata, entity_data, components.dev, page_title, True, True, True, True, True, None
     else: 
-        return None, None, None, components.no_auth, base_title, True, True, True, True, True
+        return None, None, None, components.no_auth, base_title, True, True, True, True, True, None
     
 @app.callback(
     Output('auth-div', 'children'),

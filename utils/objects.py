@@ -23,6 +23,14 @@ class Logger:
         if jobid not in Logger.log_cache:
             Logger.log_cache[jobid] = []  # Initialize cache for this job ID
 
+    def to_json(self) -> str:
+        """
+        Convert the log cache to a JSON.
+        """
+
+        # TODO Implement this method
+        pass
+
     def _get_power_user_wrapper(self) -> Bfabric:
         """
         Initializes a B-Fabric wrapper using the power user's credentials.
@@ -70,6 +78,8 @@ class Logger:
     
 
 def logthis(jobid: int, username: str, api_call: callable, *args, make_log_api_call: bool = True, **kwargs) -> any:
+
+    # TODO Implement this function as an instance method of the Logger class
     """
     Generic logging function to wrap any API call.
 
