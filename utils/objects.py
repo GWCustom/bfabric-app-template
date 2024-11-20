@@ -1,7 +1,9 @@
 import os
 import pickle
-from typing import List, Dict
+from typing import List
 from bfabric import Bfabric
+from datetime import datetime as dt
+import base64
 
 try:
     from PARAMS import CONFIG_FILE_PATH
@@ -17,7 +19,7 @@ class Logger:
         self.jobid = jobid
         self.username = username
         self.power_user_wrapper = self._get_power_user_wrapper()
-        self.logs = self._load_logs_from_dcc()
+        self.logs = []
 
     def _get_power_user_wrapper(self) -> Bfabric:
         """
@@ -28,36 +30,26 @@ class Logger:
         )
         return power_user_wrapper
 
-    def _load_logs_from_dcc(self) -> List[str]:
-        """
-        Load logs for the current job from dcc storage.
-        """
-        try:
-            with open(f"log_cache_{self.jobid}.pkl", "rb") as f:
-                logs = pickle.load(f)
-            return logs
-        except FileNotFoundError:
-            return []
+    def to_pickle(self):
+        # Pickle the object and then encode it as a base64 string
+        return {"data": base64.b64encode(pickle.dumps(self)).decode('utf-8')}
 
-    def save_logs_to_dcc(self) -> None:
-        """
-        Save the current logs to dcc storage using pickle.
-        """
-        with open(f"log_cache_{self.jobid}.pkl", "wb") as f:
-            pickle.dump(self.logs, f)
+    @classmethod 
+    def from_pickle(cls, pickle_object):
+        # Decode the base64 string back to bytes and then unpickle
+        return pickle.loads(base64.b64decode(pickle_object.get("data").encode('utf-8')))
 
-    def log_operation(self, operation: str, message: str, make_log_api_call: bool = False):
+    def log_operation(self, operation: str, message: str, make_log_api_call: bool = True):
         """
         Log an operation either locally (if make_log_api_call=False) or flush to the backend.
         """
-        log_entry = f"USER: {self.username} | {operation.upper()} - {message}"
+        log_entry = f"[{str(dt.now())}] USER: {self.username} | {operation.upper()} - {message}"
 
         if make_log_api_call:
             self.logs.append(log_entry)  # Temporarily append for flushing
             self.flush_logs()  # Flush all logs, including the new one
         else:
             self.logs.append(log_entry)  # Append to local logs
-            self.save_logs_to_dcc()  # Save locally
 
     def flush_logs(self):
         """
@@ -70,7 +62,6 @@ class Logger:
             full_log_message = "\n".join(self.logs)
             self.power_user_wrapper.save("job", {"id": self.jobid, "logthis": full_log_message})
             self.logs = []  # Clear logs after successful flush
-            self.save_logs_to_dcc()  # Save the cleared state to dcc
         except Exception as e:
             print(f"Failed to save log to B-Fabric: {e}")
 

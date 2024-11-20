@@ -114,8 +114,15 @@ def entity_data(token_data: dict) -> str:
             api_call=wrapper.read,
             endpoint=endpoint,
             obj={"id": entity_id},
-            max_results=None
+            max_results=None,
+            make_log_api_call = False
         )[0]
+
+
+        L.log_operation(
+            operation="None",
+            message="Thist is a test log message where the operation is None",
+        )
         
         if entity_data_dict:
             json_data = json.dumps({

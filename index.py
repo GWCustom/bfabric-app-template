@@ -5,6 +5,7 @@ import json
 import os
 # import bfabric
 from utils import auth_utils, components
+from utils.objects import Logger
 
 if os.path.exists("./PARAMS.py"):
     try:
@@ -97,8 +98,25 @@ app.layout = html.Div(
         dcc.Store(id='entity', storage_type='session'), # Where we store the entity data retrieved from bfabric
         dcc.Store(id='token_data', storage_type='session'), # Where we store the token auth response
         dcc.Store(id='log', storage_type='session'), # Where we store the log data
+        dcc.Store(id='dummy-output', storage_type='memory'), # Dummy output for logger
+
     ],style={"width":"100vw", "overflow-x":"hidden", "overflow-y":"scroll"}
 )
+
+
+#Callback to safe the log data in the dcc store
+@app.callback(
+    Output('dummy-output', 'data'),#dummy output!
+    [Input('log', 'data')]
+)
+def process_data(log):
+    if log:
+        data = Logger.from_pickle(log)
+        logs = data.logs
+        # Perform processing
+        return None  # Dummy output, not used
+
+
 
 
 #################### (3) app.callback ####################
@@ -153,7 +171,7 @@ def display_page(url_params):
         
         else:
             if not DEV:
-                return token, tdata, entity_data, components.auth, page_title, False, False, False, False, False, logger_instance.save_logs_to_dcc()
+                return token, tdata, entity_data, components.auth, page_title, False, False, False, False, False, logger_instance.to_pickle()
             else: 
                 return token, tdata, entity_data, components.dev, page_title, True, True, True, True, True, None
     else: 
