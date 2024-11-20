@@ -130,7 +130,6 @@ def entity_data(token_data: dict) -> str:
                 "created": entity_data_dict.get("created"),
                 "modified": entity_data_dict.get("modified"),
             })
-            print(json_data)
             return json_data, L
         else:
             print("entity_data_dict is empty or None")

@@ -111,7 +111,7 @@ app.layout = html.Div(
 )
 def process_data(log):
     if log:
-        data = Logger.from_pickle(log)
+        Logger.from_pickle(log)
         return None  # Dummy output, not used
 
 
