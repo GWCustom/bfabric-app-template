@@ -5,7 +5,6 @@ import json
 import os
 # import bfabric
 from utils import auth_utils, components
-from utils.objects import Logger
 
 if os.path.exists("./PARAMS.py"):
     try:
@@ -97,25 +96,9 @@ app.layout = html.Div(
         dcc.Store(id='token', storage_type='session'), # Where we store the actual token
         dcc.Store(id='entity', storage_type='session'), # Where we store the entity data retrieved from bfabric
         dcc.Store(id='token_data', storage_type='session'), # Where we store the token auth response
-        dcc.Store(id='log', storage_type='session'), # Where we store the log data
-        dcc.Store(id='dummy-output', storage_type='memory'), # Dummy output for logger
 
     ],style={"width":"100vw", "overflow-x":"hidden", "overflow-y":"scroll"}
 )
-
-
-#Callback to safe the log data in the dcc store
-@app.callback(
-    Output('dummy-output', 'data'),#dummy output!
-    [Input('log', 'data')]
-)
-def process_data(log):
-    if log:
-        Logger.from_pickle(log)
-        return None  # Dummy output, not used
-
-
-
 
 #################### (3) app.callback ####################
 @app.callback(
@@ -130,7 +113,6 @@ def process_data(log):
         Output('example-dropdown', 'disabled'),
         Output('example-input', 'disabled'),
         Output('example-button', 'disabled'),
-        Output('log', 'data')
     ],
     [
         Input('url', 'search'),
@@ -141,7 +123,7 @@ def display_page(url_params):
     base_title = "Bfabric App Template"
 
     if not url_params:
-        return None, None, None, components.no_auth, base_title, True, True, True, True, True, None
+        return None, None, None, components.no_auth, base_title, True, True, True, True, True
     
     token = "".join(url_params.split('token=')[1:])
     tdata_raw = auth_utils.token_to_data(token)
@@ -149,31 +131,31 @@ def display_page(url_params):
     
     if tdata_raw:
         if tdata_raw == "EXPIRED":
-            return None, None, None, components.expired, base_title, True, True, True, True, True, None
+            return None, None, None, components.expired, base_title, True, True, True, True, True
 
         else: 
             tdata = json.loads(tdata_raw)
     else:
-        return None, None, None, components.no_auth, base_title, True, True, True, True, True, None
+        return None, None, None, components.no_auth, base_title, True, True, True, True, True
     
     if tdata:
-        entity_data_json, logger_instance = auth_utils.entity_data(tdata)
+        entity_data_json = auth_utils.entity_data(tdata)
         entity_data = json.loads(entity_data_json)
         page_title = f"{base_title} - {tdata['entityClass_data']} - {tdata['entity_id_data']} ({tdata['environment']} System)" if tdata else "Bfabric App Interface"
 
         if not tdata:
-            return token, None, None, components.no_auth, page_title, True, True, True, True, True, None
+            return token, None, None, components.no_auth, page_title, True, True, True, True, True
         
         elif not entity_data:
-            return token, None, None, components.no_entity, page_title, True, True, True, True, True, None
+            return token, None, None, components.no_entity, page_title, True, True, True, True, True
         
         else:
             if not DEV:
-                return token, tdata, entity_data, components.auth, page_title, False, False, False, False, False, logger_instance.to_pickle()
+                return token, tdata, entity_data, components.auth, page_title, False, False, False, False, False
             else: 
-                return token, tdata, entity_data, components.dev, page_title, True, True, True, True, True, None
+                return token, tdata, entity_data, components.dev, page_title, True, True, True, True, True
     else: 
-        return None, None, None, components.no_auth, base_title, True, True, True, True, True, None
+        return None, None, None, components.no_auth, base_title, True, True, True, True, True
     
 @app.callback(
     Output('auth-div', 'children'),

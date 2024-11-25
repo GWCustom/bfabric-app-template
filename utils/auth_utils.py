@@ -107,7 +107,7 @@ def entity_data(token_data: dict) -> str:
             api_call=wrapper.save,
             endpoint=endpoint,
             obj={"id": entity_id},
-            make_log_api_call = False
+            flush_logs = False
         )
 
         entity_data_dict = L.logthis(
@@ -115,7 +115,7 @@ def entity_data(token_data: dict) -> str:
             endpoint=endpoint,
             obj={"id": entity_id},
             max_results=None,
-            make_log_api_call = False
+            flush_logs = False
         )[0]
 
 
@@ -130,10 +130,17 @@ def entity_data(token_data: dict) -> str:
                 "created": entity_data_dict.get("created"),
                 "modified": entity_data_dict.get("modified"),
             })
-            return json_data, L
+            return json_data
         else:
+            L.log_operation(
+                "entity_data",
+                "Entity data retrieval failed or returned None.",
+                params=None,
+                flush_logs=True
+            )
             print("entity_data_dict is empty or None")
-            return None, None
+            return None
+        
     else:
         print("Invalid input or entity information")
-        return None, None
+        return None
