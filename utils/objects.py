@@ -39,17 +39,34 @@ class Logger:
         # Decode the base64 string back to bytes and then unpickle
         return pickle.loads(base64.b64decode(pickle_object.get("data").encode('utf-8')))
 
-    def log_operation(self, operation: str, message: str, flush_logs: bool = True):
+    def log_operation(self, operation: str, message: str, params = None, flush_logs: bool = True):
         """
         Log an operation either locally (if flush_logs=False) or flush to the backend.
+        Creates well-structured, readable log entries.
         """
-        log_entry = f"[{str(dt.now())}] USER: {self.username} | {operation.upper()} - {message}"
+        # Define the timestamp format
+        timestamp = dt.now().strftime('%Y-%m-%d %H:%M:%S')
 
+        # Build the base log entry
+        log_entry = (
+            f"[{timestamp}] "      
+            f"USER: {self.username} | "
+            f"OPERATION: {operation.upper()} | "
+            f"MESSAGE: {message}"
+        )
+
+        # Add parameters if provided
+        if params is not None:
+            log_entry += f" | PARAMETERS: {params}"
+
+        # Flush or store the log entry
         if flush_logs:
             self.logs.append(log_entry)  # Temporarily append for flushing
             self.flush_logs()  # Flush all logs, including the new one
         else:
             self.logs.append(log_entry)  # Append to local logs
+
+
 
     def flush_logs(self):
         """
@@ -65,7 +82,7 @@ class Logger:
         except Exception as e:
             print(f"Failed to save log to B-Fabric: {e}")
 
-    def logthis(self, api_call: callable, *args, flush_logs: bool = True, **kwargs) -> any:
+    def logthis(self, api_call: callable, *args, params=None , flush_logs: bool = True, **kwargs) -> any:
         """
         Generic logging function to wrap any API call using a Logger instance.
         """
@@ -78,6 +95,6 @@ class Logger:
         result = api_call(*args, **kwargs)
 
         # Log the operation
-        self.log_operation(api_call.__name__, log_message, flush_logs=flush_logs)
+        self.log_operation(api_call.__name__, log_message, params, flush_logs=flush_logs)
 
         return result
