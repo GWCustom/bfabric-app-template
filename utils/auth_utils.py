@@ -107,6 +107,7 @@ def entity_data(token_data: dict) -> str:
             api_call=wrapper.save,
             endpoint=endpoint,
             obj={"id": entity_id},
+            params = None,
             flush_logs = False
         )
 
@@ -115,13 +116,15 @@ def entity_data(token_data: dict) -> str:
             endpoint=endpoint,
             obj={"id": entity_id},
             max_results=None,
+            params = None,
             flush_logs = False
         )[0]
-
 
         L.log_operation(
             operation="None",
             message="Thist is a test log message where the operation is None",
+            params=None,
+            flush_logs=True
         )
         
         if entity_data_dict:
@@ -133,8 +136,8 @@ def entity_data(token_data: dict) -> str:
             return json_data
         else:
             L.log_operation(
-                "entity_data",
-                "Entity data retrieval failed or returned None.",
+                operation= "entity_data",
+                message= "Entity data retrieval failed or returned None.",
                 params=None,
                 flush_logs=True
             )
