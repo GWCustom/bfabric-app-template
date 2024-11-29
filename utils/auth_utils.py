@@ -7,6 +7,7 @@ from bfabric import BfabricAuth
 from bfabric import BfabricClientConfig
 from dash import html
 import dash_bootstrap_components as dbc
+from .objects import Logger
 
 VALIDATION_URL = "https://fgcz-bfabric.uzh.ch/bfabric/rest/token/validate?token="
 HOST = "fgcz-bfabric.uzh.ch"
@@ -52,7 +53,8 @@ def token_to_data(token: str) -> str:
             webbase_data = environment_dict.get(userinfo['environment'], None),
             application_params_data = {},
             application_data = str(userinfo['applicationId']),
-            userWsPassword = userinfo['userWsPassword']
+            userWsPassword = userinfo['userWsPassword'],
+            jobId = userinfo['jobId']
         )
 
         return json.dumps(token_data)
@@ -92,9 +94,38 @@ def entity_data(token_data: dict) -> str:
     entity_class = token_data.get('entityClass_data', None)
     endpoint = entity_class_map.get(entity_class, None)
     entity_id = token_data.get('entity_id_data', None)
+    jobId = token_data.get('jobId', None)
+    username = token_data.get("user_data", "None")
 
-    if wrapper and entity_class and endpoint and entity_id:
-        entity_data_dict = wrapper.read(endpoint=endpoint, obj={"id": entity_id}, max_results=None)[0]
+
+    if wrapper and entity_class and endpoint and entity_id and jobId:
+
+        L = Logger(jobid=jobId, username=username)   
+        
+        # Log the read operation directly using Logger L
+        L.logthis(
+            api_call=wrapper.save,
+            endpoint=endpoint,
+            obj={"id": entity_id},
+            params = None,
+            flush_logs = False
+        )
+
+        entity_data_dict = L.logthis(
+            api_call=wrapper.read,
+            endpoint=endpoint,
+            obj={"id": entity_id},
+            max_results=None,
+            params = None,
+            flush_logs = False
+        )[0]
+
+        L.log_operation(
+            operation="None",
+            message="Thist is a test log message where the operation is None",
+            params=None,
+            flush_logs=True
+        )
         
         if entity_data_dict:
             json_data = json.dumps({
@@ -102,11 +133,17 @@ def entity_data(token_data: dict) -> str:
                 "created": entity_data_dict.get("created"),
                 "modified": entity_data_dict.get("modified"),
             })
-            print(json_data)
             return json_data
         else:
+            L.log_operation(
+                operation= "entity_data",
+                message= "Entity data retrieval failed or returned None.",
+                params=None,
+                flush_logs=True
+            )
             print("entity_data_dict is empty or None")
             return None
+        
     else:
         print("Invalid input or entity information")
         return None

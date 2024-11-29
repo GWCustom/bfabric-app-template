@@ -96,9 +96,9 @@ app.layout = html.Div(
         dcc.Store(id='token', storage_type='session'), # Where we store the actual token
         dcc.Store(id='entity', storage_type='session'), # Where we store the entity data retrieved from bfabric
         dcc.Store(id='token_data', storage_type='session'), # Where we store the token auth response
+
     ],style={"width":"100vw", "overflow-x":"hidden", "overflow-y":"scroll"}
 )
-
 
 #################### (3) app.callback ####################
 @app.callback(
@@ -139,7 +139,8 @@ def display_page(url_params):
         return None, None, None, components.no_auth, base_title, True, True, True, True, True
     
     if tdata:
-        entity_data = json.loads(auth_utils.entity_data(tdata))
+        entity_data_json = auth_utils.entity_data(tdata)
+        entity_data = json.loads(entity_data_json)
         page_title = f"{base_title} - {tdata['entityClass_data']} - {tdata['entity_id_data']} ({tdata['environment']} System)" if tdata else "Bfabric App Interface"
 
         if not tdata:
